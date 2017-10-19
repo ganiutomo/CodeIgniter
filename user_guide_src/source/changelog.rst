@@ -11,7 +11,7 @@ Release Date: Not Released
 
    -  Officially dropped any kind of support for anything under PHP 5.4.8.
    -  Updated Welcome view and HTML error templates with new styling.
-   -  Updated configurable directory paths to handle missing trailing ``DIRECTORY_SEPARATOR``s automatically.
+   -  Updated configurable directory paths to handle missing trailing ``DIRECTORY_SEPARATOR`` automatically.
 
 -  Core
 
@@ -20,6 +20,8 @@ Release Date: Not Released
    -  Removed previously deprecated :doc:`Routing Class <general/routing>` methods ``fetch_directory()``, ``fetch_class()`` and ``fetch_method()`` (use the respective class properties instead).
    -  Removed previously deprecated :doc:`Config Library <libraries/config>` method ``system_url()`` (encourages insecure practices).
    -  Changed :doc:`URI Library <libraries/uri>` to ignore the ``$config['url_suffix']``, ``$config['permitted_uri_chars']`` configuration settings for CLI requests.
+   -  Changed :doc:`Loader <libraries/loader>` method ``model()`` to always check if the loaded class extends ``CI_Model``.
+   -  Changed :doc:`Output Library <libraries/output>` method ``_display()`` default parameter value to ``NULL`` instead of empty string.
 
    -  :doc:`Input Library <libraries/input>` changes include:
 
@@ -50,6 +52,8 @@ Release Date: Not Released
       - Removed previously deprecated method ``prep_for_form()`` / rule *prep_for_form*.
       - Changed method ``set_rules()`` to throw a ``BadMethodCallException`` when its first parameter is not an array and the ``$rules`` one is unused.
       - Added rule **valid_mac**, which replicates PHP's native ``filter_var()`` with ``FILTER_VALIDATE_MAC``.
+      - Added ability to validate entire arrays at once, if ``is_array`` is within the list of rules.
+      - Added ability to fetch processed data via a second parameter to ``run()``.
 
    -  :doc:`HTML Table Library <libraries/table>` changes include:
 
@@ -58,6 +62,7 @@ Release Date: Not Released
    -  :doc:`Email Library <libraries/email>` changes include:
 
       - Changed the default value of the **validate** option to ``TRUE``.
+      - Changed the ``send()`` method to always return ``TRUE`` when sending multiple batches of emails.
 
 -  :doc:`Database <database/index>` changes include:
 
@@ -73,6 +78,8 @@ Release Date: Not Released
    -  :doc:`Query Builder <database/query_builder>`:
 
       - Added methods ``having_in()``, ``or_having_in()``, ``not_having_in()``, ``or_not_having_in()``.
+      - Updated method ``join()`` to allow accepting ``NATURAL`` clauses in its third parameter.
+      - Updated logic to allow dots in alias names.
 
 -  Helpers
 
@@ -82,7 +89,7 @@ Release Date: Not Released
    -  Removed previously deprecated :doc:`Security Helper <helpers/security_helper>` function ``do_hash()`` (use PHP's native ``hash()`` instead).
    -  Removed previously deprecated :doc:`File Helper <helpers/file_helper>` function ``read_file()`` (use PHP's native ``file_get_contents()`` instead).
    -  Added new function :php:func:`ordinal_format()` to :doc:`Inflector Helper <helpers/inflector_helper>`.
-   -  Added 'img_alt' option to :php:func`create_captcha()` :doc:`CAPTCHA Helper` with a default value of 'captcha'.
+   -  Added 'img_alt' option to :php:func`create_captcha()` :doc:`CAPTCHA Helper <helpers/captcha_helper>` with a default value of 'captcha'.
 
    -  :doc:`Download Helper <helpers/download_helper>` changes include:
 
@@ -107,16 +114,81 @@ Release Date: Not Released
       - Removed the second (out of three) parameter from the :php:func:`form_upload()` function (it was never used).
 
 
-Version 3.1.5
+Version 3.1.7
 =============
 
 Release Date: Not Released
 
+-  General Changes
+
+   -  Updated :doc:`Form Validation Library <libraries/form_validation>` rule ``valid_email`` to use ``INTL_IDNA_VARIANT_UCS46`` for non-ASCII domain names.
+   -  Updated :doc:`Email Library <libraries/email>` to use ``INTL_IDNA_VARIANT_UCS46`` for non-ASCII domain names.
+
+Bug fixes for 3.1.7
+-------------------
+
+-  Fixed a regression (#5276) - :doc:`Database Utilities <database/utilities>` method ``backup()`` generated incorrect ``INSERT`` statements with the 'mysqli' driver.
+-  Fixed a regression where :doc:`Database Results <database/results>` method ``field_data()`` returned incorrect type names.
+-  Fixed a bug (#5278) - :doc:`URL Helper <helpers/url_helper>` function :php:func:`auto_link()` didn't detect trailing slashes in URLs.
+-  Fixed a regression (#5282) - :doc:`Query Builder <database/query_builder>` method ``count_all_results()`` breaks ``ORDER BY`` clauses for subsequent queries.
+-  Fixed a bug (#5279) - :doc:`Query Builder <database/query_builder>` didn't account for already escaped identifiers while applying database name prefixes.
+
+Version 3.1.6
+=============
+
+Release Date: Sep 25, 2017
+
+-  **Security**
+
+   -  Fixed a potential object injection in :doc:`Cache Library <libraries/caching>` 'apc' driver when ``save()`` is used with ``$raw = TRUE`` (thanks to Tomas Bortoli).
+
+-  General Changes
+
+   -  Deprecated :doc:`Cache Library Library <libraries/caching>` driver 'apc'.
+   -  Updated the :doc:`Session Library <libraries/sessions>` 'redis', 'memcached' drivers to reduce the potential of a locking race conditions.
+
+
+Bug fixes for 3.1.6
+-------------------
+
+-  Fixed a bug (#5164) - :doc:`Loader Library <libraries/loader>` method ``library()`` ignored requests to load libraries previously assigned to super-object properties named differently than the library name.
+-  Fixed a bug (#5168) - :doc:`Query Builder <database/query_builder>` method ``count_all_results()`` produced erroneous queries on Microsoft SQL Server when ``ORDER BY`` clauses are cached.
+-  Fixed a bug (#5128) - :doc:`Profiler <general/profiling>` didn't wrap ``$_SESSION`` and configuration arrays in ``<pre>`` tags.
+-  Fixed a bug (#5183) - :doc:`Database Library <database/index>` method ``is_write_type()`` didn't return TRUE for ``MERGE`` statements.
+-  Fixed a bug where :doc:`Image Manipulation Library <libraries/image_lib>` didn't escape image source paths passed to NetPBM as shell arguments.
+-  Fixed a bug (#5236) - :doc:`Query Builder <database/query_builder>` methods ``limit()``, ``offset()`` break SQL Server 2005, 2008 queries with ``"<tablename>".*`` in the ``SELECT`` clause.
+-  Fixed a bug (#5243) - :doc:`Database Library <database/index>` method ``version()`` didn't work with the 'pdo/dblib' driver.
+-  Fixed a bug (#5246) - :doc:`Database transactions <database/transactions>` status wasn't reset unless ``trans_complete()`` was called.
+-  Fixed a bug (#5260) - :doc:`Database Utilities <database/utilities>` method ``backup()`` generated incorrect ``INSERT`` statements with the 'mysqli' driver.
+-  Fixed a bug where :doc:`Database Results <database/results>` method ``field_data()`` didn't parse field types with the 'mysqli' driver.
+
+Version 3.1.5
+=============
+
+Release Date: Jun 19, 2017
+
+-  **Security**
+
+   -  :doc:`Form Validation Library <libraries/form_validation>` rule ``valid_email`` could be bypassed if ``idn_to_ascii()`` is available.
+
+-  General Changes
+
+   -  Updated :doc:`Form Helper <helpers/form_helper>` function :php:func:`form_label()` to accept HTML attributes as a string.
+
+Bug fixes for 3.1.5
+-------------------
+
+-  Fixed a bug (#5070) - :doc:`Email Library <libraries/email>` didn't properly detect 7-bit encoding.
+-  Fixed a bug (#5084) - :doc:`XML-RPC Library <libraries/xmlrpc>` errored because of a variable name typo.
+-  Fixed a bug (#5108) - :doc:`Inflector Helper <helpers/inflector_helper>` function :php:func:`singular()` didn't properly handle 'quizzes'.
+-  Fixed a regression (#5131) - private controller methods triggered PHP errors instead of a 404 response.
+-  Fixed a bug (#5150) - :doc:`Database Forge <database/forge>` method ``modify_column()`` triggered an error while renaming columns with the 'oci8', 'pdo/oci' drivers.
+-  Fixed a bug (#5155) - :doc:`Query Builder <database/query_builder>` method ``count_all_results()`` returned incorrect result for queries using ``LIMIT``, ``OFFSET``.
 
 Version 3.1.4
 =============
 
-Release Date: March 20, 2017
+Release Date: Mar 20, 2017
 
 -  **Security**
 

@@ -99,7 +99,7 @@ class Loader_test extends CI_TestCase {
 		// Test reloading
 		unset($this->ci_obj->$name);
 		$this->assertInstanceOf('CI_Loader', $this->load->library($lib));
-		$this->assertObjectNotHasAttribute($name, $this->ci_obj);
+		$this->assertObjectHasAttribute($name, $this->ci_obj);
 
 		// Create baseless library
 		$name = 'ext_baseless_lib';
@@ -265,6 +265,25 @@ class Loader_test extends CI_TestCase {
 		);
 
 		$this->load->model('ci_test_nonexistent_model.php');
+	}
+
+	// --------------------------------------------------------------------
+
+	public function test_invalid_model()
+	{
+		$this->ci_set_core_class('model', 'CI_Model');
+
+		// Create model in VFS
+		$model = 'Unit_test_invalid_model';
+		$content = '<?php class '.$model.' {} ';
+		$this->ci_vfs_create($model, $content, $this->ci_app_root, 'models');
+
+		// Test no extending
+		$this->setExpectedException(
+			'RuntimeException',
+			'Class '.$model.' doesn\'t extend CI_Model'
+		);
+		$this->load->model($model);
 	}
 
 	// --------------------------------------------------------------------
@@ -544,7 +563,7 @@ class Loader_test extends CI_TestCase {
 		$dir = 'testdir';
 		$path = APPPATH.$dir.'/';
 		$model = 'Automod';
-		$this->ci_vfs_create($model, '<?php class '.$model.' { }', $this->ci_app_root, array($dir, 'models'));
+		$this->ci_vfs_create($model, '<?php class '.$model.' extends CI_Model { }', $this->ci_app_root, array($dir, 'models'));
 
 		// Create autoloader config
 		$cfg = array(
